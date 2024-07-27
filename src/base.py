@@ -679,10 +679,16 @@ def buildCode(build_target, build_arch, nproc, force, dry, pack_sources, single,
 							run(['rsync','-a', dep_license_dir+"/", license_dir])
 
 		if target.top_package:
-			package_name = target.release_name + "-" + arch + "-" + version_string +".tgz"
-			log_step("Packing {} ...".format(package_name))
-			os.replace(os.path.join(output_dir, "yosyshq"), os.path.join(output_dir, target.release_name))
-			create_tar(package_name, target.release_name, output_dir)
+			if arch == 'windows-x64':
+				package_name = target.release_name + "-" + arch + "-" + version_string +".exe"
+				log_step("Packing {} ...".format(package_name))
+				os.replace(os.path.join(output_dir, "yosyshq"), os.path.join(output_dir, target.release_name))
+				create_exe(package_name, target.release_name, output_dir)
+			else:
+				package_name = target.release_name + "-" + arch + "-" + version_string +".tgz"
+				log_step("Packing {} ...".format(package_name))
+				os.replace(os.path.join(output_dir, "yosyshq"), os.path.join(output_dir, target.release_name))
+				create_tar(package_name, target.release_name, output_dir)
 
 		log_step("Marking build finished ...")
 		with open(hash_file, 'w') as f:
@@ -791,14 +797,14 @@ def generateYaml(target, build_arch, write_to_file):
 			yaml_content +="      - name: Build\n"
 			yaml_content +="        run: ./builder.py build --arch={} --target={} --single\n".format(arch, target.name)
 			yaml_content +="      - uses: ncipollo/release-action@v1\n"
-			yaml_content +="        if: hashFiles('_outputs/{}/{}/*.{}') != ''\n".format(arch, target.name, "tgz")
+			yaml_content +="        if: hashFiles('_outputs/{}/{}/*.{}') != ''\n".format(arch, target.name, "exe" if arch=="windows-x64" else "tgz")
 			yaml_content +="        with:\n"
 			yaml_content +="          allowUpdates: True\n"
 			yaml_content +="          omitBody: True\n"
 			yaml_content +="          omitBodyDuringUpdate: True\n"
 			yaml_content +="          omitNameDuringUpdate: True\n"
 			yaml_content +="          tag: ${{ steps.date.outputs.date }}\n"
-			yaml_content +="          artifacts: \"_outputs/{}/{}/*.{}\"\n".format(arch, target.name, "tgz")
+			yaml_content +="          artifacts: \"_outputs/{}/{}/*.{}\"\n".format(arch, target.name, "exe" if arch=="windows-x64" else "tgz")
 			yaml_content +="          token: ${{ secrets.GITHUB_TOKEN }}\n"
 		else:
 			yaml_content +="      - name: Build\n"
