@@ -7,8 +7,10 @@ Target(
     dependencies = [
         'yosys',
         'formal',
+        'imctk',
         'ghdl',
         'ghdl-yosys-plugin',
+        'yosys-slang-plugin',
         'nextpnr-generic',
         'nextpnr-ice40',
         'nextpnr-ecp5',
@@ -52,6 +54,7 @@ Target(
     dependencies = [
         'yosys',
         'formal',
+        'imctk',
         'aiger',
         'avy',
         'bitwuzla',
@@ -75,6 +78,7 @@ Target(
     release_name = 'oss-cad-suite-ci',
     top_package = True,
     dependencies = [
+        'imctk',
         'aiger',
         'avy',
         'bitwuzla',

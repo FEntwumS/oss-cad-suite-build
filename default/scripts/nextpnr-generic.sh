@@ -1,3 +1,4 @@
+export PATH=${BUILD_DIR}/python3-native${INSTALL_PREFIX}/bin:$PATH
 cd nextpnr
 build_gui="OFF"
 if [ ${ARCH} == 'linux-x64' ] || [ ${ARCH} == 'windows-x64' ] || [ ${ARCH} == 'darwin-x64' ] || [ ${ARCH} == 'darwin-arm64' ]; then

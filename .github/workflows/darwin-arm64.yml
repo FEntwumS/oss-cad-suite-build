@@ -119,7 +119,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
   darwin-arm64-yosys:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
         with:
@@ -155,7 +154,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
   darwin-arm64-formal:
     runs-on: ubuntu-latest
-    continue-on-error: true
     needs: darwin-arm64-python3
     steps:
       - uses: actions/checkout@v4
@@ -192,6 +190,149 @@ jobs:
           tag: bucket-darwin-arm64
           artifacts: "darwin-arm64-formal.tgz"
           token: ${{ secrets.GITHUB_TOKEN }}
+  darwin-arm64-imctk:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: 'yosyshq/oss-cad-suite-build'
+      - name: Cache sources
+        id: cache-sources
+        uses: actions/cache@v4
+        with:
+          path: _sources
+          key: cache-sources-imctk
+      - name: Download previous build
+        run: |
+          URL="https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-imctk.tgz"
+          if wget --spider "${URL}" 2>/dev/null; then
+              wget -qO- "${URL}" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+          else
+              echo "Previous version not found in bucket"
+          fi
+      - name: Build
+        run: ./builder.py build --arch=darwin-arm64 --target=imctk --single --tar
+      - uses: ncipollo/release-action@v1
+        if: hashFiles('darwin-arm64-imctk.tgz') != ''
+        with:
+          allowUpdates: True
+          prerelease: True
+          omitBody: True
+          omitBodyDuringUpdate: True
+          omitNameDuringUpdate: True
+          tag: bucket-darwin-arm64
+          artifacts: "darwin-arm64-imctk.tgz"
+          token: ${{ secrets.GITHUB_TOKEN }}
+  darwin-arm64-ghdl:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: 'yosyshq/oss-cad-suite-build'
+      - name: Cache sources
+        id: cache-sources
+        uses: actions/cache@v4
+        with:
+          path: _sources
+          key: cache-sources-ghdl
+      - name: Download previous build
+        run: |
+          URL="https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-ghdl.tgz"
+          if wget --spider "${URL}" 2>/dev/null; then
+              wget -qO- "${URL}" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+          else
+              echo "Previous version not found in bucket"
+          fi
+      - name: Build
+        run: ./builder.py build --arch=darwin-arm64 --target=ghdl --single --tar
+      - uses: ncipollo/release-action@v1
+        if: hashFiles('darwin-arm64-ghdl.tgz') != ''
+        with:
+          allowUpdates: True
+          prerelease: True
+          omitBody: True
+          omitBodyDuringUpdate: True
+          omitNameDuringUpdate: True
+          tag: bucket-darwin-arm64
+          artifacts: "darwin-arm64-ghdl.tgz"
+          token: ${{ secrets.GITHUB_TOKEN }}
+  darwin-arm64-ghdl-yosys-plugin:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    needs: [ darwin-arm64-ghdl, darwin-arm64-yosys ]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: 'yosyshq/oss-cad-suite-build'
+      - name: Cache sources
+        id: cache-sources
+        uses: actions/cache@v4
+        with:
+          path: _sources
+          key: cache-sources-ghdl-yosys-plugin
+      - name: Download previous build
+        run: |
+          URL="https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-ghdl-yosys-plugin.tgz"
+          if wget --spider "${URL}" 2>/dev/null; then
+              wget -qO- "${URL}" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+          else
+              echo "Previous version not found in bucket"
+          fi
+      - name: Download darwin-arm64-ghdl
+        run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-ghdl.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+      - name: Download darwin-arm64-yosys
+        run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-yosys.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+      - name: Build
+        run: ./builder.py build --arch=darwin-arm64 --target=ghdl-yosys-plugin --single --tar
+      - uses: ncipollo/release-action@v1
+        if: hashFiles('darwin-arm64-ghdl-yosys-plugin.tgz') != ''
+        with:
+          allowUpdates: True
+          prerelease: True
+          omitBody: True
+          omitBodyDuringUpdate: True
+          omitNameDuringUpdate: True
+          tag: bucket-darwin-arm64
+          artifacts: "darwin-arm64-ghdl-yosys-plugin.tgz"
+          token: ${{ secrets.GITHUB_TOKEN }}
+  darwin-arm64-yosys-slang-plugin:
+    runs-on: ubuntu-latest
+    needs: darwin-arm64-yosys
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: 'yosyshq/oss-cad-suite-build'
+      - name: Cache sources
+        id: cache-sources
+        uses: actions/cache@v4
+        with:
+          path: _sources
+          key: cache-sources-yosys-slang-plugin
+      - name: Download previous build
+        run: |
+          URL="https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-yosys-slang-plugin.tgz"
+          if wget --spider "${URL}" 2>/dev/null; then
+              wget -qO- "${URL}" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+          else
+              echo "Previous version not found in bucket"
+          fi
+      - name: Download darwin-arm64-yosys
+        run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-yosys.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+      - name: Build
+        run: ./builder.py build --arch=darwin-arm64 --target=yosys-slang-plugin --single --tar
+      - uses: ncipollo/release-action@v1
+        if: hashFiles('darwin-arm64-yosys-slang-plugin.tgz') != ''
+        with:
+          allowUpdates: True
+          prerelease: True
+          omitBody: True
+          omitBodyDuringUpdate: True
+          omitNameDuringUpdate: True
+          tag: bucket-darwin-arm64
+          artifacts: "darwin-arm64-yosys-slang-plugin.tgz"
+          token: ${{ secrets.GITHUB_TOKEN }}
   darwin-arm64-nextpnr-generic:
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -218,6 +359,8 @@ jobs:
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-python3.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Download linux-x64-nextpnr-bba
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-linux-x64/linux-x64-nextpnr-bba.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+      - name: Download linux-x64-python3-native
+        run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-linux-x64/linux-x64-python3-native.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Build
         run: ./builder.py build --arch=darwin-arm64 --target=nextpnr-generic --single --tar
       - uses: ncipollo/release-action@v1
@@ -259,6 +402,8 @@ jobs:
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-linux-x64/linux-x64-icestorm-bba.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Download linux-x64-nextpnr-bba
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-linux-x64/linux-x64-nextpnr-bba.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+      - name: Download linux-x64-python3-native
+        run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-linux-x64/linux-x64-python3-native.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Build
         run: ./builder.py build --arch=darwin-arm64 --target=nextpnr-ice40 --single --tar
       - uses: ncipollo/release-action@v1
@@ -300,6 +445,8 @@ jobs:
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-linux-x64/linux-x64-nextpnr-bba.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Download linux-x64-prjtrellis-bba
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-linux-x64/linux-x64-prjtrellis-bba.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+      - name: Download linux-x64-python3-native
+        run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-linux-x64/linux-x64-python3-native.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Build
         run: ./builder.py build --arch=darwin-arm64 --target=nextpnr-ecp5 --single --tar
       - uses: ncipollo/release-action@v1
@@ -341,6 +488,8 @@ jobs:
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-linux-x64/linux-x64-nextpnr-bba.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Download linux-x64-prjtrellis-bba
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-linux-x64/linux-x64-prjtrellis-bba.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+      - name: Download linux-x64-python3-native
+        run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-linux-x64/linux-x64-python3-native.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Build
         run: ./builder.py build --arch=darwin-arm64 --target=nextpnr-machxo2 --single --tar
       - uses: ncipollo/release-action@v1
@@ -382,6 +531,8 @@ jobs:
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-linux-x64/linux-x64-nextpnr-bba.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Download linux-x64-prjoxide-bba
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-linux-x64/linux-x64-prjoxide-bba.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+      - name: Download linux-x64-python3-native
+        run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-linux-x64/linux-x64-python3-native.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Build
         run: ./builder.py build --arch=darwin-arm64 --target=nextpnr-nexus --single --tar
       - uses: ncipollo/release-action@v1
@@ -1410,6 +1561,45 @@ jobs:
           tag: bucket-darwin-arm64
           artifacts: "darwin-arm64-pyhdl.tgz"
           token: ${{ secrets.GITHUB_TOKEN }}
+  darwin-arm64-cocotb:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    needs: darwin-arm64-python3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: 'yosyshq/oss-cad-suite-build'
+      - name: Cache sources
+        id: cache-sources
+        uses: actions/cache@v4
+        with:
+          path: _sources
+          key: cache-sources-cocotb
+      - name: Download previous build
+        run: |
+          URL="https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-cocotb.tgz"
+          if wget --spider "${URL}" 2>/dev/null; then
+              wget -qO- "${URL}" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+          else
+              echo "Previous version not found in bucket"
+          fi
+      - name: Download darwin-arm64-python3
+        run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-python3.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+      - name: Download linux-x64-python3-native
+        run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-linux-x64/linux-x64-python3-native.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+      - name: Build
+        run: ./builder.py build --arch=darwin-arm64 --target=cocotb --single --tar
+      - uses: ncipollo/release-action@v1
+        if: hashFiles('darwin-arm64-cocotb.tgz') != ''
+        with:
+          allowUpdates: True
+          prerelease: True
+          omitBody: True
+          omitBodyDuringUpdate: True
+          omitNameDuringUpdate: True
+          tag: bucket-darwin-arm64
+          artifacts: "darwin-arm64-cocotb.tgz"
+          token: ${{ secrets.GITHUB_TOKEN }}
   darwin-arm64-system-resources:
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -1446,7 +1636,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
   darwin-arm64-default:
     runs-on: ubuntu-latest
-    needs: [ darwin-arm64-aiger, darwin-arm64-apicula, darwin-arm64-avy, darwin-arm64-bitwuzla, darwin-arm64-boolector, darwin-arm64-cvc4, darwin-arm64-cvc5, darwin-arm64-eqy, darwin-arm64-formal, darwin-arm64-graphviz, darwin-arm64-gtkwave, darwin-arm64-icestorm, darwin-arm64-iverilog, darwin-arm64-nextpnr-ecp5, darwin-arm64-nextpnr-generic, darwin-arm64-nextpnr-himbaechel, darwin-arm64-nextpnr-ice40, darwin-arm64-nextpnr-machxo2, darwin-arm64-nextpnr-nexus, darwin-arm64-openfpgaloader, darwin-arm64-pono, darwin-arm64-prjoxide, darwin-arm64-prjtrellis, darwin-arm64-pyhdl, darwin-arm64-python-programmers, darwin-arm64-python3, darwin-arm64-system-resources, darwin-arm64-utils, darwin-arm64-verilator, darwin-arm64-xdot, darwin-arm64-yices, darwin-arm64-yosys, darwin-arm64-z3 ]
+    needs: [ darwin-arm64-aiger, darwin-arm64-apicula, darwin-arm64-avy, darwin-arm64-bitwuzla, darwin-arm64-boolector, darwin-arm64-cocotb, darwin-arm64-cvc4, darwin-arm64-cvc5, darwin-arm64-eqy, darwin-arm64-formal, darwin-arm64-ghdl, darwin-arm64-ghdl-yosys-plugin, darwin-arm64-graphviz, darwin-arm64-gtkwave, darwin-arm64-icestorm, darwin-arm64-imctk, darwin-arm64-iverilog, darwin-arm64-nextpnr-ecp5, darwin-arm64-nextpnr-generic, darwin-arm64-nextpnr-himbaechel, darwin-arm64-nextpnr-ice40, darwin-arm64-nextpnr-machxo2, darwin-arm64-nextpnr-nexus, darwin-arm64-openfpgaloader, darwin-arm64-pono, darwin-arm64-prjoxide, darwin-arm64-prjtrellis, darwin-arm64-pyhdl, darwin-arm64-python-programmers, darwin-arm64-python3, darwin-arm64-system-resources, darwin-arm64-utils, darwin-arm64-verilator, darwin-arm64-xdot, darwin-arm64-yices, darwin-arm64-yosys, darwin-arm64-yosys-slang-plugin, darwin-arm64-z3 ]
     steps:
       - name: Get current date
         id: date
@@ -1464,6 +1654,8 @@ jobs:
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-bitwuzla.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Download darwin-arm64-boolector
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-boolector.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+      - name: Download darwin-arm64-cocotb
+        run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-cocotb.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Download darwin-arm64-cvc4
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-cvc4.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Download darwin-arm64-cvc5
@@ -1472,12 +1664,18 @@ jobs:
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-eqy.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Download darwin-arm64-formal
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-formal.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+      - name: Download darwin-arm64-ghdl
+        run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-ghdl.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+      - name: Download darwin-arm64-ghdl-yosys-plugin
+        run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-ghdl-yosys-plugin.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Download darwin-arm64-graphviz
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-graphviz.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Download darwin-arm64-gtkwave
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-gtkwave.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Download darwin-arm64-icestorm
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-icestorm.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+      - name: Download darwin-arm64-imctk
+        run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-imctk.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Download darwin-arm64-iverilog
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-iverilog.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Download darwin-arm64-nextpnr-ecp5
@@ -1518,6 +1716,8 @@ jobs:
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-yices.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Download darwin-arm64-yosys
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-yosys.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
+      - name: Download darwin-arm64-yosys-slang-plugin
+        run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-yosys-slang-plugin.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Download darwin-arm64-z3
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-darwin-arm64/darwin-arm64-z3.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Download linux-x64-nextpnr-himbaechel-gowin
