@@ -3,6 +3,9 @@ name: windows-x64
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   windows-x64-yosys:
     runs-on: ubuntu-latest
