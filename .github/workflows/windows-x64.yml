@@ -172,7 +172,7 @@ jobs:
               echo "Previous version not found in bucket"
           fi
       - name: Build
-        run: ./builder.py build --arch=linux-x64 --target=ghdl --single --tar
+        run: ./builder.py build --arch=windows-x64 --target=ghdl --single --tar
       - uses: ncipollo/release-action@v1
         if: hashFiles('windows-x64-ghdl.tgz') != ''
         with:
@@ -211,7 +211,7 @@ jobs:
       - name: Download windows-x64-yosys
         run: wget -qO- "https://github.com/yosyshq/oss-cad-suite-build/releases/download/bucket-windows-x64/windows-x64-yosys.tgz" --retry-connrefused --read-timeout=20 --timeout=15 --retry-on-http-error=404 | tar xvfz -
       - name: Build
-        run: ./builder.py build --arch=linux-x64 --target=ghdl-yosys-plugin --single --tar
+        run: ./builder.py build --arch=windows-x64 --target=ghdl-yosys-plugin --single --tar
       - uses: ncipollo/release-action@v1
         if: hashFiles('windows-x64-ghdl-yosys-plugin.tgz') != ''
         with:
